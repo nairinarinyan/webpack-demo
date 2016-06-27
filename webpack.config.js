@@ -2,13 +2,13 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-    devtool: 'source-map',
+    //devtool: 'source-map',
     context: __dirname + '/src', //absolute
     entry: {
         app: [
-            // 'webpack-dev-server/client?http://0.0.0.0:8080',
-            // 'webpack/hot/only-dev-server',
-            'webpack-hot-middleware/client',
+             'webpack-dev-server/client?http://0.0.0.0:8080',
+             'webpack/hot/only-dev-server',
+            //'webpack-hot-middleware/client',
             './index.js'
         ],
         vendor: ['react', 'react-dom']
@@ -34,8 +34,7 @@ module.exports = {
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),
-        new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.bundle.js'),
-        new webpack.HotModuleReplacementPlugin()
+        //new webpack.HotModuleReplacementPlugin()
     ]
 };
