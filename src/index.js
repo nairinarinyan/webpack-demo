@@ -17,7 +17,10 @@ render(
 		<Route path='/' component={Root}>
 			<Route path='/boring' component={Boring} /> 
 			<Route path='/heavy' component={Heavy} />
-            <Redirect from='/webpack-demo' to='/' />
+		</Route>
+		<Route path='/webpack-demo' component={Root}>
+			<Route path='/boring' component={Boring} /> 
+			<Route path='/heavy' component={Heavy} />
 		</Route>
 	</Router>
 	, document.getElementById('app'));

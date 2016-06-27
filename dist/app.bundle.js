@@ -4539,6 +4539,12 @@ webpackJsonp([2],[
 			{ path: '/', component: _Root2.default },
 			_react2.default.createElement(_reactRouter.Route, { path: '/boring', component: _Boring2.default }),
 			_react2.default.createElement(_reactRouter.Route, { path: '/heavy', component: _Heavy2.default })
+		),
+		_react2.default.createElement(
+			_reactRouter.Route,
+			{ path: '/webpack-demo', component: _Root2.default },
+			_react2.default.createElement(_reactRouter.Route, { path: '/boring', component: _Boring2.default }),
+			_react2.default.createElement(_reactRouter.Route, { path: '/heavy', component: _Heavy2.default })
 		)
 	), document.getElementById('app'));
 
