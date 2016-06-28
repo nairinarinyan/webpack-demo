@@ -4405,7 +4405,7 @@ webpackJsonp([2],[
 					Utils.computeNextPositions(balls);
 	
 					this.frameId = window.requestAnimationFrame(render.bind(this));
-					this.ctx.clearRect(0, 0, 1200, 700);
+					this.ctx.clearRect(0, 0, Scene.WIDTH, Scene.HEIGHT);
 	
 					Line.connectBalls(this.ctx, '#19647E', balls);
 					Ball.drawBalls(this.ctx, balls);
