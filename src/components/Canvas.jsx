@@ -36,7 +36,7 @@ class Utils {
 		return new Vector2(0, 1900);
 	}
 
-	static detectCollisions(...objects) {
+	static detectCollisions(objects) {
 		objects.forEach(obj => {
 			if (obj.position.y >= Scene.HEIGHT - obj.radius) {
 				obj.position.y = Scene.HEIGHT - obj.radius
@@ -61,7 +61,7 @@ class Utils {
 		});
 	}
 
-	static computeNextPositions(...objects) {
+	static computeNextPositions(objects) {
 		objects.forEach(obj => {
 			obj.velocity = Vector2.sum(obj.velocity, Vector2.dot(Utils.GRAVITY, Utils.delta));
 			obj.position = Vector2.sum(obj.position, Vector2.dot(obj.velocity, Utils.delta));
@@ -82,7 +82,7 @@ class Ball {
 		return [this.position.x, this.position.y, this.radius, 0, 2 * Math.PI];
 	}
 
-	static drawBalls(ctx, ...balls) {
+	static drawBalls(ctx, balls) {
 		balls.forEach(ball => {
 			ctx.beginPath();
 			ctx.arc(...ball.canvasArc());
@@ -93,14 +93,12 @@ class Ball {
 }
 
 class Line {
-	static connectBalls(ctx, lineColor, ...balls) {
-		let firstBall = balls.shift();
-
+	static connectBalls(ctx, lineColor, balls) {
 		ctx.beginPath();
 		ctx.strokeStyle = lineColor;
-		ctx.moveTo(firstBall.position.x, firstBall.position.y);
+		ctx.moveTo(balls[0].position.x, balls[0].position.y);
 
-		balls.forEach(ball => {
+		balls.slice(1).forEach(ball => {
 			ctx.lineTo(ball.position.x, ball.position.y);
 		});
 
@@ -126,22 +124,29 @@ export default class Canvas extends Component {
 	draw() {
 		Utils._last = 0;
 
-		let blueBall = new Ball(40, 40, 40, 3000, 400, '#23B7A3');
-		let greenBall = new Ball(40, 40, 40, 1000, 800, '#09814A');
-		let orangeBall = new Ball(40, 660, 40, 2000, -1300, '#EE964B');
+		let balls = [
+			new Ball(40, 40, 40, 3000, 400, '#23B7A3'),
+			new Ball(40, 40, 40, 1000, 800, '#09814A'),
+			new Ball(40, 660, 40, 2000, -1300, '#EE964B'),
+			new Ball(40, 60, 80, 200, 1300, '#22AED1'),
+			new Ball(140, 300, 10, 2000, -1300, '#5603AD'),
+			new Ball(660, 100, 53, 3000, -120, '#6E0D25'),
+			new Ball(40, 60, 40, 200, -1300, '#472C1B'),
+			new Ball(900, 260, 40, 1100, 1300, '#FF5D73')
+		];
 
 		render.call(this);
 
 		function render() {
 			Utils.computeDelta();
-			Utils.computeNextPositions(blueBall, greenBall, orangeBall);
+			Utils.computeNextPositions(balls);
 
 			this.frameId = window.requestAnimationFrame(render.bind(this));
 			this.ctx.clearRect(0, 0, 1200, 700);
 
-			Line.connectBalls(this.ctx, '#19647E', blueBall, greenBall, orangeBall);
-			Ball.drawBalls(this.ctx, blueBall, greenBall, orangeBall);
-			Utils.detectCollisions(blueBall, greenBall, orangeBall);
+			Line.connectBalls(this.ctx, '#19647E', balls);
+			Ball.drawBalls(this.ctx, balls);
+			Utils.detectCollisions(balls);
 		}
 	}
 

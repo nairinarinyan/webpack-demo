@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-    //devtool: 'source-map',
+    devtool: 'source-map',
     context: __dirname + '/src', //absolute
     entry: {
         app: [
