@@ -27,10 +27,6 @@ export default class Boring extends Component {
 	render() {
 		return (
 			<div>
-				<h2>I'm Boring</h2>
-				<h3>But I can count, see:</h3>
-				<h3>{this.state.counter}</h3>
-				
 				<Canvas />
 			</div>	
 		);

@@ -3277,7 +3277,7 @@ webpackJsonp([2],[
 	
 	
 	// module
-	exports.push([module.id, "canvas {\n  border: 1px solid #000;\n}\n", ""]);
+	exports.push([module.id, "", ""]);
 	
 	// exports
 
@@ -4158,21 +4158,6 @@ webpackJsonp([2],[
 				return _react2.default.createElement(
 					'div',
 					null,
-					_react2.default.createElement(
-						'h2',
-						null,
-						'I\'m Boring'
-					),
-					_react2.default.createElement(
-						'h3',
-						null,
-						'But I can count, see:'
-					),
-					_react2.default.createElement(
-						'h3',
-						null,
-						this.state.counter
-					),
 					_react2.default.createElement(_Canvas2.default, null)
 				);
 			}
@@ -4213,6 +4198,21 @@ webpackJsonp([2],[
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	var Color = function () {
+		function Color() {
+			_classCallCheck(this, Color);
+		}
+	
+		_createClass(Color, null, [{
+			key: 'colors',
+			get: function get() {
+				return ['#C47AC0', '#2F323Al', '#41393E', '#C7E8F3', '#EB5E28', '#4A5899', '#559CAD', '#7CAE7A', '#A72608', '#F0F2A6', '#1A1B25', '#CE0357', '#A507D7', '#61C9A8', '#ED9B40', '#0B3142'];
+			}
+		}]);
+	
+		return Color;
+	}();
+	
 	var Scene = function () {
 		function Scene() {
 			_classCallCheck(this, Scene);
@@ -4221,12 +4221,12 @@ webpackJsonp([2],[
 		_createClass(Scene, null, [{
 			key: 'WIDTH',
 			get: function get() {
-				return 1200;
+				return window.innerWidth;
 			}
 		}, {
 			key: 'HEIGHT',
 			get: function get() {
-				return 700;
+				return window.innerHeight - 50;
 			}
 		}]);
 	
@@ -4269,6 +4269,12 @@ webpackJsonp([2],[
 				Utils._last = now;
 			}
 		}, {
+			key: 'random',
+			value: function random(min, max, int) {
+				var ret = Math.random() * (max - min) + min;
+				return int ? Math.round(ret) : ret;
+			}
+		}, {
 			key: 'detectCollisions',
 			value: function detectCollisions(objects) {
 				objects.forEach(function (obj) {
@@ -4301,6 +4307,11 @@ webpackJsonp([2],[
 					obj.velocity = Vector2.sum(obj.velocity, Vector2.dot(Utils.GRAVITY, Utils.delta));
 					obj.position = Vector2.sum(obj.position, Vector2.dot(obj.velocity, Utils.delta));
 				});
+			}
+		}, {
+			key: 'squash',
+			value: function squash(x, min, max, rangeMin, rangeMax) {
+				return min + (x - rangeMin) * (max - min) / (rangeMax - rangeMin);
 			}
 		}, {
 			key: 'GRAVITY',
@@ -4339,6 +4350,33 @@ webpackJsonp([2],[
 					ctx.fillStyle = ball.color;
 					ctx.fill();
 				});
+			}
+		}, {
+			key: 'getRandomBalls',
+			value: function getRandomBalls(count) {
+				var balls = [];
+				var minRadius = 10,
+				    maxRadius = Scene.WIDTH < 700 ? 30 : 50;
+	
+				while (count) {
+					var radius = Utils.random(minRadius, maxRadius, true);
+					var positionX = Utils.random(radius, Scene.WIDTH);
+					var positionY = Utils.random(radius, Scene.HEIGHT);
+	
+					var velocityX = Utils.random(-3000, 3000);
+					var velocityY = Utils.random(-3000, 3000);
+	
+					var idx = Utils.random(0, Color.colors.length, true);
+					var color = Color.colors[idx];
+	
+					var weight = Utils.squash(radius, 1.2, 2, minRadius, maxRadius);
+	
+					balls.push(new Ball(positionX, positionY, radius, velocityX, velocityY, color, weight));
+	
+					count--;
+				}
+	
+				return balls;
 			}
 		}]);
 	
@@ -4396,7 +4434,7 @@ webpackJsonp([2],[
 			value: function draw() {
 				Utils._last = 0;
 	
-				var balls = [new Ball(40, 40, 40, 3000, 400, '#23B7A3'), new Ball(40, 40, 40, 1000, 800, '#09814A'), new Ball(40, 660, 40, 2000, -1300, '#EE964B'), new Ball(40, 60, 80, 200, 1300, '#22AED1'), new Ball(140, 300, 10, 2000, -1300, '#5603AD'), new Ball(660, 100, 53, 3000, -120, '#6E0D25'), new Ball(40, 60, 40, 200, -1300, '#472C1B'), new Ball(900, 260, 40, 1100, 1300, '#FF5D73')];
+				var balls = Ball.getRandomBalls(Scene.WIDTH < 700 ? 30 : 50);
 	
 				render.call(this);
 	
@@ -4572,7 +4610,7 @@ webpackJsonp([2],[
 			value: function render() {
 				return _react2.default.createElement(
 					'div',
-					{ className: 'container' },
+					null,
 					_react2.default.createElement(Button, { to: '/boring' }),
 					_react2.default.createElement(Button, { to: '/heavy' }),
 					this.props.children

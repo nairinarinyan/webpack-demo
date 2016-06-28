@@ -1,12 +1,18 @@
 import React, { Component } from 'react';
 
+class Color {
+	static get colors() {
+		return ['#C47AC0', '#2F323Al', '#41393E', '#C7E8F3', '#EB5E28', '#4A5899', '#559CAD', '#7CAE7A', '#A72608', '#F0F2A6', '#1A1B25', '#CE0357', '#A507D7', '#61C9A8', '#ED9B40', '#0B3142'];
+	}
+}
+
 class Scene {
 	static get WIDTH () {
-		return 1200;
+		return window.innerWidth;
 	}
 
 	static get HEIGHT () {
-		return 700;
+		return window.innerHeight - 50;
 	}
 }
 
@@ -34,6 +40,11 @@ class Utils {
 
 	static get GRAVITY() {
 		return new Vector2(0, 1900);
+	}
+
+	static random(min, max, int) {
+		let ret = Math.random() * (max - min) + min;
+		return int ? Math.round(ret) : ret;
 	}
 
 	static detectCollisions(objects) {
@@ -67,6 +78,10 @@ class Utils {
 			obj.position = Vector2.sum(obj.position, Vector2.dot(obj.velocity, Utils.delta));
 		});
 	}
+
+	static squash(x, min, max, rangeMin, rangeMax) {
+		return min + (x - rangeMin) * (max-min)/(rangeMax - rangeMin);
+	}
 }
 
 class Ball {
@@ -89,6 +104,31 @@ class Ball {
 			ctx.fillStyle = ball.color;
 			ctx.fill();
 		});
+	}
+
+	static getRandomBalls(count) {
+		let balls = [];
+		const minRadius = 10, maxRadius = Scene.WIDTH < 700 ? 30 : 50;
+
+		while(count) {
+			let radius = Utils.random(minRadius, maxRadius, true);
+			let positionX = Utils.random(radius, Scene.WIDTH);
+			let positionY = Utils.random(radius, Scene.HEIGHT);
+
+			let velocityX = Utils.random(-3000, 3000);
+			let velocityY = Utils.random(-3000, 3000);
+
+			let idx = Utils.random(0, Color.colors.length, true);
+			let color = Color.colors[idx];
+
+			let weight = Utils.squash(radius, 1.2, 2, minRadius, maxRadius);
+
+			balls.push(new Ball(positionX, positionY, radius, velocityX, velocityY, color, weight));
+
+			count--;
+		}
+
+		return balls;
 	}
 }
 
@@ -124,16 +164,7 @@ export default class Canvas extends Component {
 	draw() {
 		Utils._last = 0;
 
-		let balls = [
-			new Ball(40, 40, 40, 3000, 400, '#23B7A3'),
-			new Ball(40, 40, 40, 1000, 800, '#09814A'),
-			new Ball(40, 660, 40, 2000, -1300, '#EE964B'),
-			new Ball(40, 60, 80, 200, 1300, '#22AED1'),
-			new Ball(140, 300, 10, 2000, -1300, '#5603AD'),
-			new Ball(660, 100, 53, 3000, -120, '#6E0D25'),
-			new Ball(40, 60, 40, 200, -1300, '#472C1B'),
-			new Ball(900, 260, 40, 1100, 1300, '#FF5D73')
-		];
+		let balls = Ball.getRandomBalls(Scene.WIDTH < 700 ? 30 : 50);
 
 		render.call(this);
 

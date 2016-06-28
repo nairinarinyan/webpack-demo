@@ -16,7 +16,7 @@ class Button extends Component {
 export default class Root extends Component {
 	render() {
 		return (
-			<div className='container'>
+			<div>
 				<Button to='/boring' />
 				<Button to='/heavy' />
 
