@@ -1,5 +1,15 @@
 import React, { Component } from 'react';
 
+class Scene {
+	static get WIDTH () {
+		return 1200;
+	}
+
+	static get HEIGHT () {
+		return 700;
+	}
+}
+
 class Vector2 {
 	constructor(x, y) {
 		this.x = x;
@@ -21,6 +31,82 @@ class Utils {
 		Utils.delta = (now - (Utils._last || now - 16))/1000;
 		Utils._last = now;
 	}
+
+	static get GRAVITY() {
+		return new Vector2(0, 1900);
+	}
+
+	static detectCollisions(...objects) {
+		objects.forEach(obj => {
+			if (obj.position.y >= Scene.HEIGHT - obj.radius) {
+				obj.position.y = Scene.HEIGHT - obj.radius
+				obj.velocity.y = -obj.velocity.y/obj.weight;
+				obj.velocity.x = obj.velocity.x/obj.weight;
+			}
+
+			if (obj.position.y <= obj.radius) {
+				obj.position.y = obj.radius;
+				obj.velocity.y = -obj.velocity.y/obj.weight;
+			}
+
+			if (obj.position.x >= Scene.WIDTH - obj.radius) {
+				obj.position.x = Scene.WIDTH - obj.radius;
+				obj.velocity.x = -obj.velocity.x/obj.weight;	
+			}
+
+			if (obj.position.x <= obj.radius) {
+				obj.position.x = obj.radius;
+				obj.velocity.x = -obj.velocity.x/obj.weight;	
+			}
+		});
+	}
+
+	static computeNextPositions(...objects) {
+		objects.forEach(obj => {
+			obj.velocity = Vector2.sum(obj.velocity, Vector2.dot(Utils.GRAVITY, Utils.delta));
+			obj.position = Vector2.sum(obj.position, Vector2.dot(obj.velocity, Utils.delta));
+		});
+	}
+}
+
+class Ball {
+	constructor(positionX, positionY, radius, velocityX, velocityY, color, weight = 1.5) {
+		this.position = new Vector2(positionX, positionY);
+		this.velocity = new Vector2(velocityX, velocityY);
+		this.radius = radius;
+		this.weight = weight;
+		this.color = color;
+	}
+
+	canvasArc() {
+		return [this.position.x, this.position.y, this.radius, 0, 2 * Math.PI];
+	}
+
+	static drawBalls(ctx, ...balls) {
+		balls.forEach(ball => {
+			ctx.beginPath();
+			ctx.arc(...ball.canvasArc());
+			ctx.fillStyle = ball.color;
+			ctx.fill();
+		});
+	}
+}
+
+class Line {
+	static connectBalls(ctx, lineColor, ...balls) {
+		let firstBall = balls.shift();
+
+		ctx.beginPath();
+		ctx.strokeStyle = lineColor;
+		ctx.moveTo(firstBall.position.x, firstBall.position.y);
+
+		balls.forEach(ball => {
+			ctx.lineTo(ball.position.x, ball.position.y);
+		});
+
+		ctx.closePath();
+		ctx.stroke();
+	}
 }
 
 export default class Canvas extends Component {
@@ -40,46 +126,22 @@ export default class Canvas extends Component {
 	draw() {
 		Utils._last = 0;
 
-		let position = new Vector2(40, 40);
-		let velocity = new Vector2(3000, 400);
-		const gravity = new Vector2(0, 1900);
-		const weight = 1.5;
+		let blueBall = new Ball(40, 40, 40, 3000, 400, '#23B7A3');
+		let greenBall = new Ball(40, 40, 40, 1000, 800, '#09814A');
+		let orangeBall = new Ball(40, 660, 40, 2000, -1300, '#EE964B');
 
 		render.call(this);
 
 		function render() {
 			Utils.computeDelta();
-
-			velocity = Vector2.sum(velocity, Vector2.dot(gravity, Utils.delta));
-			position = Vector2.sum(position, Vector2.dot(velocity, Utils.delta));
+			Utils.computeNextPositions(blueBall, greenBall, orangeBall);
 
 			this.frameId = window.requestAnimationFrame(render.bind(this));
 			this.ctx.clearRect(0, 0, 1200, 700);
-			this.ctx.beginPath();
-			this.ctx.arc(position.x, position.y, 40, 0, 2 * Math.PI);
-			this.ctx.fillStyle = '#23B7A3';
-			this.ctx.fill();
 
-			if (position.y >= 660) {
-				position.y = 660;
-				velocity.y = -velocity.y/weight;
-				velocity.x = velocity.x/weight;
-			}
-
-			if (position.y <= 40) {
-				position.y = 40;
-				velocity.y = -velocity.y/weight;
-			}
-
-			if (position.x >= 1160) {
-				position.x = 1160;
-				velocity.x = -velocity.x/weight;	
-			}
-
-			if (position.x <= 40) {
-				position.x = 40;
-				velocity.x = -velocity.x/weight;	
-			}
+			Line.connectBalls(this.ctx, '#19647E', blueBall, greenBall, orangeBall);
+			Ball.drawBalls(this.ctx, blueBall, greenBall, orangeBall);
+			Utils.detectCollisions(blueBall, greenBall, orangeBall);
 		}
 	}
 
@@ -87,8 +149,8 @@ export default class Canvas extends Component {
 		return (
 			<div>
 				<canvas 
-					width="1200"
-					height="700"
+					width={Scene.WIDTH}
+					height={Scene.HEIGHT}
 					ref={(c) => {
 						if (!this.ctx)
 							this.ctx = c.getContext('2d');

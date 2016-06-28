@@ -4209,7 +4209,29 @@ webpackJsonp([2],[
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Scene = function () {
+		function Scene() {
+			_classCallCheck(this, Scene);
+		}
+
+		_createClass(Scene, null, [{
+			key: 'WIDTH',
+			get: function get() {
+				return 1200;
+			}
+		}, {
+			key: 'HEIGHT',
+			get: function get() {
+				return 700;
+			}
+		}]);
+
+		return Scene;
+	}();
 
 	var Vector2 = function () {
 		function Vector2(x, y) {
@@ -4246,9 +4268,123 @@ webpackJsonp([2],[
 				Utils.delta = (now - (Utils._last || now - 16)) / 1000;
 				Utils._last = now;
 			}
+		}, {
+			key: 'detectCollisions',
+			value: function detectCollisions() {
+				for (var _len = arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+					objects[_key] = arguments[_key];
+				}
+
+				objects.forEach(function (obj) {
+					if (obj.position.y >= Scene.HEIGHT - obj.radius) {
+						obj.position.y = Scene.HEIGHT - obj.radius;
+						obj.velocity.y = -obj.velocity.y / obj.weight;
+						obj.velocity.x = obj.velocity.x / obj.weight;
+					}
+
+					if (obj.position.y <= obj.radius) {
+						obj.position.y = obj.radius;
+						obj.velocity.y = -obj.velocity.y / obj.weight;
+					}
+
+					if (obj.position.x >= Scene.WIDTH - obj.radius) {
+						obj.position.x = Scene.WIDTH - obj.radius;
+						obj.velocity.x = -obj.velocity.x / obj.weight;
+					}
+
+					if (obj.position.x <= obj.radius) {
+						obj.position.x = obj.radius;
+						obj.velocity.x = -obj.velocity.x / obj.weight;
+					}
+				});
+			}
+		}, {
+			key: 'computeNextPositions',
+			value: function computeNextPositions() {
+				for (var _len2 = arguments.length, objects = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+					objects[_key2] = arguments[_key2];
+				}
+
+				objects.forEach(function (obj) {
+					obj.velocity = Vector2.sum(obj.velocity, Vector2.dot(Utils.GRAVITY, Utils.delta));
+					obj.position = Vector2.sum(obj.position, Vector2.dot(obj.velocity, Utils.delta));
+				});
+			}
+		}, {
+			key: 'GRAVITY',
+			get: function get() {
+				return new Vector2(0, 1900);
+			}
 		}]);
 
 		return Utils;
+	}();
+
+	var Ball = function () {
+		function Ball(positionX, positionY, radius, velocityX, velocityY, color) {
+			var weight = arguments.length <= 6 || arguments[6] === undefined ? 1.5 : arguments[6];
+
+			_classCallCheck(this, Ball);
+
+			this.position = new Vector2(positionX, positionY);
+			this.velocity = new Vector2(velocityX, velocityY);
+			this.radius = radius;
+			this.weight = weight;
+			this.color = color;
+		}
+
+		_createClass(Ball, [{
+			key: 'canvasArc',
+			value: function canvasArc() {
+				return [this.position.x, this.position.y, this.radius, 0, 2 * Math.PI];
+			}
+		}], [{
+			key: 'drawBalls',
+			value: function drawBalls(ctx) {
+				for (var _len3 = arguments.length, balls = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+					balls[_key3 - 1] = arguments[_key3];
+				}
+
+				balls.forEach(function (ball) {
+					ctx.beginPath();
+					ctx.arc.apply(ctx, _toConsumableArray(ball.canvasArc()));
+					ctx.fillStyle = ball.color;
+					ctx.fill();
+				});
+			}
+		}]);
+
+		return Ball;
+	}();
+
+	var Line = function () {
+		function Line() {
+			_classCallCheck(this, Line);
+		}
+
+		_createClass(Line, null, [{
+			key: 'connectBalls',
+			value: function connectBalls(ctx, lineColor) {
+				for (var _len4 = arguments.length, balls = Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
+					balls[_key4 - 2] = arguments[_key4];
+				}
+
+				var firstBall = balls.shift();
+
+				ctx.beginPath();
+				ctx.strokeStyle = lineColor;
+				ctx.moveTo(firstBall.position.x, firstBall.position.y);
+
+				balls.forEach(function (ball) {
+					ctx.lineTo(ball.position.x, ball.position.y);
+				});
+
+				ctx.closePath();
+				ctx.stroke();
+			}
+		}]);
+
+		return Line;
 	}();
 
 	var Canvas = function (_Component) {
@@ -4278,46 +4414,22 @@ webpackJsonp([2],[
 			value: function draw() {
 				Utils._last = 0;
 
-				var position = new Vector2(40, 40);
-				var velocity = new Vector2(3000, 400);
-				var gravity = new Vector2(0, 1900);
-				var weight = 1.5;
+				var blueBall = new Ball(40, 40, 40, 3000, 400, '#23B7A3');
+				var greenBall = new Ball(40, 40, 40, 1000, 800, '#09814A');
+				var orangeBall = new Ball(40, 660, 40, 2000, -1300, '#EE964B');
 
 				render.call(this);
 
 				function render() {
 					Utils.computeDelta();
-
-					velocity = Vector2.sum(velocity, Vector2.dot(gravity, Utils.delta));
-					position = Vector2.sum(position, Vector2.dot(velocity, Utils.delta));
+					Utils.computeNextPositions(blueBall, greenBall, orangeBall);
 
 					this.frameId = window.requestAnimationFrame(render.bind(this));
 					this.ctx.clearRect(0, 0, 1200, 700);
-					this.ctx.beginPath();
-					this.ctx.arc(position.x, position.y, 40, 0, 2 * Math.PI);
-					this.ctx.fillStyle = '#23B7A3';
-					this.ctx.fill();
 
-					if (position.y >= 660) {
-						position.y = 660;
-						velocity.y = -velocity.y / weight;
-						velocity.x = velocity.x / weight;
-					}
-
-					if (position.y <= 40) {
-						position.y = 40;
-						velocity.y = -velocity.y / weight;
-					}
-
-					if (position.x >= 1160) {
-						position.x = 1160;
-						velocity.x = -velocity.x / weight;
-					}
-
-					if (position.x <= 40) {
-						position.x = 40;
-						velocity.x = -velocity.x / weight;
-					}
+					Line.connectBalls(this.ctx, '#19647E', blueBall, greenBall, orangeBall);
+					Ball.drawBalls(this.ctx, blueBall, greenBall, orangeBall);
+					Utils.detectCollisions(blueBall, greenBall, orangeBall);
 				}
 			}
 		}, {
@@ -4329,8 +4441,8 @@ webpackJsonp([2],[
 					'div',
 					null,
 					_react2.default.createElement('canvas', {
-						width: '1200',
-						height: '700',
+						width: Scene.WIDTH,
+						height: Scene.HEIGHT,
 						ref: function ref(c) {
 							if (!_this2.ctx) _this2.ctx = c.getContext('2d');
 						} })
